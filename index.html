@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMFX 6 BOXES</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial;background:#0f0f0f;color:#fff;padding:10px}
+.box{border:2px solid #444;background:#1e1e1e;margin:14px 0;padding:14px;border-radius:14px}
+h3{margin:0 0 10px;color:#ffd700}
+button{padding:9px 16px;margin:5px;border-radius:9px;font-weight:bold;cursor:pointer;border:none}
+.resetBtn{background:#ff3b3b;color:#fff}.calcBtn{background:#00ff88;color:#000}.nextBtn{background:#0096ff;color:#fff}
+input{padding:8px;margin:5px;border-radius:6px;border:1px solid #555;background:#2a2a2a;color:#fff;width:28%}
+table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #555;padding:6px;text-align:center;font-size:13px}
+.redHead{background:#ff0000;color:#fff;padding:8px;border-radius:8px;text-align:center;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h3>BOX 1: TRADER ID + PAIR</h3>
+<input id="traderId" placeholder="Trader ID" style="width:45%">
+<input id="pairSearch" placeholder="Pair e.g. GBPJPY, XAUUSD" style="width:50%">
+<div style="margin-top:8px">Selected: <b id="selectedPair">NONE</b></div>
+<button class="resetBtn" onclick="resetBox1All()" style="width:100%;margin-top:10px">RESET - BELOW PAIR - EMPTY ALL BOXES</button>
+</div>
+
+<div class="box">
+<h3>BOX 2: MODE</h3>
+<button id="autoBtn" class="calcBtn" onclick="setMode('AUTO')">AUTO</button>
+<button id="manualBtn" onclick="setMode('MANUAL')">MANUAL</button>
+</div>
+
+<div class="box">
+<h3>BOX 3: H L C</h3>
+Daily:<br>H <input id="dH"> L <input id="dL"> C <input id="dC"><br>
+Weekly:<br>H <input id="wH"> L <input id="wL"> C <input id="wC"><br>
+<button class="calcBtn" onclick="calcHLC()">CALCULATE HLC</button>
+<button class="resetBtn" onclick="resetBox3()">RESET - CLEAR HLC & R/S - KEEP CURRENT PRICE</button>
+</div>
+
+<div class="box">
+<h3>BOX 4: R/S LEVELS</h3>
+<div class="redHead"><span id="pairShow">SELECT PAIR</span> - Price: <span id="priceShow">-</span></div>
+<table>
+<tr><th>LEVEL</th><th>DAILY</th><th>WEEKLY</th></tr>
+<tr><td>R5</td><td id="dR5">-</td><td id="wR5">-</td></tr>
+<tr><td>R4</td><td id="dR4">-</td><td id="wR4">-</td></tr>
+<tr><td>R3</td><td id="dR3">-</td><td id="wR3">-</td></tr>
+<tr><td>R2</td><td id="dR2">-</td><td id="wR2">-</td></tr>
+<tr><td>R1</td><td id="dR1">-</td><td id="wR1">-</td></tr>
+<tr><td>P</td><td id="dP">-</td><td id="wP">-</td></tr>
+<tr><td>S1</td><td id="dS1">-</td><td id="wS1">-</td></tr>
+<tr><td>S2</td><td id="dS2">-</td><td id="wS2">-</td></tr>
+<tr><td>S3</td><td id="dS3">-</td><td id="wS3">-</td></tr>
+<tr><td>S4</td><td id="dS4">-</td><td id="wS4">-</td></tr>
+<tr><td>S5</td><td id="dS5">-</td><td id="wS5">-</td></tr>
+</table>
+<button class="nextBtn" onclick="goToLot()">NEXT FOR LOT →</button>
+</div>
+
+<div class="box">
+<h3>BOX 5: LOT</h3>
+Current Price <input id="currPrice" placeholder="Current Price" style="width:50%"><br>
+Balance <input id="balance" type="number" placeholder="Balance" style="width:30%"><br><br>
+SL <input id="sl" type="number" placeholder="SL"> TP <input id="tp" type="number" placeholder="TP"><br>
+<button class="calcBtn" onclick="calcLot()">CALCULATE LOT & PROFIT</button>
+<button class="resetBtn" onclick="resetStep5()">RESET</button>
+</div>
+
+<div class="box">
+<h3>BOX 6: FINAL TABLE</h3>
+<table>
+<tr><th>ITEM</th><th>VALUE</th></tr>
+<tr><td>APPROVAL</td><td id="approval">-</td></tr>
+<tr><td>LOT</td><td id="lotFinal">-</td></tr>
+<tr><td>PROFIT</td><td id="profitFinal">-</td></tr>
+<tr><td>BALANCE</td><td id="balanceFinal">-</td></tr>
+</table>
+<button class="resetBtn" onclick="resetBox1All()" style="width:100%">RESET ALL</button>
+</div>
+
+<script>
+let autoLocked=false;
+function resetBox1All(){
+ ["traderId","pairSearch","dH","dL","dC","wH","wL","wC","currPrice","balance","sl","tp"].forEach(i=>document.getElementById(i).value="");
+ document.getElementById("selectedPair").innerText="NONE";
+ document.getElementById("pairShow").innerText="SELECT PAIR";
+ document.getElementById("priceShow").innerText="-";
+ ["dR5","dR4","dR3","dR2","dR1","dP","dS1","dS2","dS3","dS4","dS5","wR5","wR4","wR3","wR2","wR1","wP","wS1","wS2","wS3","wS4","wS5","approval","lotFinal","profitFinal","balanceFinal"].forEach(i=>document.getElementById(i).innerText="-");
+ autoLocked=false;
+}
+function resetBox3(){
+ let keep=document.getElementById("currPrice").value;
+ ["dH","dL","dC","wH","wL","wC"].forEach(i=>document.getElementById(i).value="");
+ ["dR5","dR4","dR3","dR2","dR1","dP","dS1","dS2","dS3","dS4","dS5","wR5","wR4","wR3","wR2","wR1","wP","wS1","wS2","wS3","wS4","wS5"].forEach(i=>document.getElementById(i).innerText="-");
+ document.getElementById("currPrice").value=keep;
+ document.getElementById("priceShow").innerText=keep||"-";
+ autoLocked=false;
+}
+function resetStep5(){
+ ["balance","sl","tp"].forEach(i=>document.getElementById(i).value="");
+ ["approval","lotFinal","profitFinal","balanceFinal"].forEach(i=>document.getElementById(i).innerText="-");
+}
+function setMode(m){
+ if(m==='AUTO'){
+  let p=document.getElementById("pairSearch").value.trim().toUpperCase()||"XAUUSD";
+  document.getElementById("selectedPair").innerText=p+" ✅";
+  document.getElementById("pairShow").innerText=p;
+  let base=4376.82, dr=86.02, wr=290.4;
+  if(p.includes("JPY")){base=149.35;dr=0.6;wr=2.2;}
+  else if(p.includes("EUR")){base=1.15722;dr=0.0018;wr=0.0075;}
+  let dec=p.includes("JPY")?3:p.includes("XAU")||p.includes("GOLD")?2:5;
+  if(!p.includes("GOLD")&&!p.includes("XAU")&&!p.includes("JPY")) dec=5;
+  document.getElementById("dH").value=(base+dr/2).toFixed(dec);
+  document.getElementById("dL").value=(base-dr/2).toFixed(dec);
+  document.getElementById("dC").value=base.toFixed(dec);
+  document.getElementById("wH").value=(base+wr/2).toFixed(dec);
+  document.getElementById("wL").value=(base-wr/2).toFixed(dec);
+  document.getElementById("wC").value=base.toFixed(dec);
+  document.getElementById("currPrice").value=base.toFixed(dec);
+  document.getElementById("priceShow").innerText=base.toFixed(dec);
+  autoLocked=true;
+ }else{ resetBox3(); document.getElementById("currPrice").value=""; }
+}
+function calcHLC(){
+ let dH=parseFloat(document.getElementById("dH").value),dL=parseFloat(document.getElementById("dL").value),dC=parseFloat(document.getElementById("dC").value);
+ let wH=parseFloat(document.getElementById("wH").value),wL=parseFloat(document.getElementById("wL").value),wC=parseFloat(document.getElementById("wC").value);
+ if(isNaN(dH)||isNaN(dL)||isNaN(dC)) return alert("Fill Daily HLC");
+ if(isNaN(wH)) wH=dH; if(isNaN(wL)) wL=dL; if(isNaN(wC)) wC=dC;
+ let dr=dH-dL, wr=wH-wL, p=document.getElementById("pairShow").innerText, dec=p.includes("JPY")?3:p.includes("XAU")||p.includes("GOLD")?2:5;
+ if(!p.includes("GOLD")&&!p.includes("XAU")&&!p.includes("JPY")) dec=5;
+ const calc=(C,R)=>{return {R5:(C+R*1.1).toFixed(dec),R4:(C+R*1.1/2).toFixed(dec),R3:(C+R*1.1/4).toFixed(dec),R2:(C+R*1.1/6).toFixed(dec),R1:(C+R*1.1/12).toFixed(dec),P:C.toFixed(dec),S1:(C-R*1.1/12).toFixed(dec),S2:(C-R*1.1/6).toFixed(dec),S3:(C-R*1.1/4).toFixed(dec),S4:(C-R*1.1/2).toFixed(dec),S5:(C-R*1.1).toFixed(dec)}}
+ let d=calc(dC,dr), w=calc(wC,wr);
+ Object.keys(d).forEach(k=>{document.getElementById("d"+k).innerText=d[k];document.getElementById("w"+k).innerText=w[k];});
+}
+function calcLot(){
+ let curr=parseFloat(document.getElementById("currPrice").value),bal=parseFloat(document.getElementById("balance").value),sl=parseFloat(document.getElementById("sl").value),tp=parseFloat(document.getElementById("tp").value);
+ if(isNaN(curr)||isNaN(bal)) return alert("Enter Current Price & Balance");
+ let p=document.getElementById("pairShow").innerText, pip=p.includes("JPY")?0.01:p.includes("XAU")||p.includes("GOLD")?0.1:0.0001;
+ let slPips=isNaN(sl)?10:Math.abs(curr-sl)/pip, tpPips=isNaN(tp)?20:Math.abs(tp-curr)/pip;
+ let lot=(bal*0.95*0.02/slPips*10); if(lot<0.01) lot=0.01;
+ let profit=lot*tpPips;
+ document.getElementById("approval").innerText=(bal*0.95).toFixed(2);
+ document.getElementById("lotFinal").innerText=lot.toFixed(2);
+ document.getElementById("profitFinal").innerText="$"+profit.toFixed(2);
+ document.getElementById("balanceFinal").innerText="$"+(bal+profit).toFixed(2);
+}
+function goToLot(){document.getElementById("currPrice").scrollIntoView({behavior:'smooth'});}
+</script>
+</body>
+</html>
