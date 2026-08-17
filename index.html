@@ -1,151 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TMFX 6 BOXES</title>
-<style>
-*{box-sizing:border-box}body{font-family:Arial;background:#0f0f0f;color:#fff;padding:10px}
-.box{border:2px solid #444;background:#1e1e1e;margin:14px 0;padding:14px;border-radius:14px}
-h3{margin:0 0 10px;color:#ffd700}
-button{padding:9px 16px;margin:5px;border-radius:9px;font-weight:bold;cursor:pointer;border:none}
-.resetBtn{background:#ff3b3b;color:#fff}.calcBtn{background:#00ff88;color:#000}.nextBtn{background:#0096ff;color:#fff}
-input{padding:8px;margin:5px;border-radius:6px;border:1px solid #555;background:#2a2a2a;color:#fff;width:28%}
-table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #555;padding:6px;text-align:center;font-size:13px}
-.redHead{background:#ff0000;color:#fff;padding:8px;border-radius:8px;text-align:center;font-weight:bold}
-</style>
-</head>
-<body>
-
-<div class="box">
-<h3>BOX 1: TRADER ID + PAIR</h3>
-<input id="traderId" placeholder="Trader ID" style="width:45%">
-<input id="pairSearch" placeholder="Pair e.g. GBPJPY, XAUUSD" style="width:50%">
-<div style="margin-top:8px">Selected: <b id="selectedPair">NONE</b></div>
-<button class="resetBtn" onclick="resetBox1All()" style="width:100%;margin-top:10px">RESET - BELOW PAIR - EMPTY ALL BOXES</button>
-</div>
-
-<div class="box">
-<h3>BOX 2: MODE</h3>
-<button id="autoBtn" class="calcBtn" onclick="setMode('AUTO')">AUTO</button>
-<button id="manualBtn" onclick="setMode('MANUAL')">MANUAL</button>
-</div>
-
-<div class="box">
-<h3>BOX 3: H L C</h3>
-Daily:<br>H <input id="dH"> L <input id="dL"> C <input id="dC"><br>
-Weekly:<br>H <input id="wH"> L <input id="wL"> C <input id="wC"><br>
-<button class="calcBtn" onclick="calcHLC()">CALCULATE HLC</button>
-<button class="resetBtn" onclick="resetBox3()">RESET - CLEAR HLC & R/S - KEEP CURRENT PRICE</button>
-</div>
-
-<div class="box">
-<h3>BOX 4: R/S LEVELS</h3>
-<div class="redHead"><span id="pairShow">SELECT PAIR</span> - Price: <span id="priceShow">-</span></div>
-<table>
-<tr><th>LEVEL</th><th>DAILY</th><th>WEEKLY</th></tr>
-<tr><td>R5</td><td id="dR5">-</td><td id="wR5">-</td></tr>
-<tr><td>R4</td><td id="dR4">-</td><td id="wR4">-</td></tr>
-<tr><td>R3</td><td id="dR3">-</td><td id="wR3">-</td></tr>
-<tr><td>R2</td><td id="dR2">-</td><td id="wR2">-</td></tr>
-<tr><td>R1</td><td id="dR1">-</td><td id="wR1">-</td></tr>
-<tr><td>P</td><td id="dP">-</td><td id="wP">-</td></tr>
-<tr><td>S1</td><td id="dS1">-</td><td id="wS1">-</td></tr>
-<tr><td>S2</td><td id="dS2">-</td><td id="wS2">-</td></tr>
-<tr><td>S3</td><td id="dS3">-</td><td id="wS3">-</td></tr>
-<tr><td>S4</td><td id="dS4">-</td><td id="wS4">-</td></tr>
-<tr><td>S5</td><td id="dS5">-</td><td id="wS5">-</td></tr>
-</table>
-<button class="nextBtn" onclick="goToLot()">NEXT FOR LOT →</button>
-</div>
-
-<div class="box">
-<h3>BOX 5: LOT</h3>
-Current Price <input id="currPrice" placeholder="Current Price" style="width:50%"><br>
-Balance <input id="balance" type="number" placeholder="Balance" style="width:30%"><br><br>
-SL <input id="sl" type="number" placeholder="SL"> TP <input id="tp" type="number" placeholder="TP"><br>
-<button class="calcBtn" onclick="calcLot()">CALCULATE LOT & PROFIT</button>
-<button class="resetBtn" onclick="resetStep5()">RESET</button>
-</div>
-
-<div class="box">
-<h3>BOX 6: FINAL TABLE</h3>
-<table>
-<tr><th>ITEM</th><th>VALUE</th></tr>
-<tr><td>APPROVAL</td><td id="approval">-</td></tr>
-<tr><td>LOT</td><td id="lotFinal">-</td></tr>
-<tr><td>PROFIT</td><td id="profitFinal">-</td></tr>
-<tr><td>BALANCE</td><td id="balanceFinal">-</td></tr>
-</table>
-<button class="resetBtn" onclick="resetBox1All()" style="width:100%">RESET ALL</button>
-</div>
-
-<script>
-let autoLocked=false;
-function resetBox1All(){
- ["traderId","pairSearch","dH","dL","dC","wH","wL","wC","currPrice","balance","sl","tp"].forEach(i=>document.getElementById(i).value="");
- document.getElementById("selectedPair").innerText="NONE";
- document.getElementById("pairShow").innerText="SELECT PAIR";
- document.getElementById("priceShow").innerText="-";
- ["dR5","dR4","dR3","dR2","dR1","dP","dS1","dS2","dS3","dS4","dS5","wR5","wR4","wR3","wR2","wR1","wP","wS1","wS2","wS3","wS4","wS5","approval","lotFinal","profitFinal","balanceFinal"].forEach(i=>document.getElementById(i).innerText="-");
- autoLocked=false;
-}
-function resetBox3(){
- let keep=document.getElementById("currPrice").value;
- ["dH","dL","dC","wH","wL","wC"].forEach(i=>document.getElementById(i).value="");
- ["dR5","dR4","dR3","dR2","dR1","dP","dS1","dS2","dS3","dS4","dS5","wR5","wR4","wR3","wR2","wR1","wP","wS1","wS2","wS3","wS4","wS5"].forEach(i=>document.getElementById(i).innerText="-");
- document.getElementById("currPrice").value=keep;
- document.getElementById("priceShow").innerText=keep||"-";
- autoLocked=false;
-}
-function resetStep5(){
- ["balance","sl","tp"].forEach(i=>document.getElementById(i).value="");
- ["approval","lotFinal","profitFinal","balanceFinal"].forEach(i=>document.getElementById(i).innerText="-");
-}
-function setMode(m){
- if(m==='AUTO'){
-  let p=document.getElementById("pairSearch").value.trim().toUpperCase()||"XAUUSD";
-  document.getElementById("selectedPair").innerText=p+" ✅";
-  document.getElementById("pairShow").innerText=p;
-  let base=4376.82, dr=86.02, wr=290.4;
-  if(p.includes("JPY")){base=149.35;dr=0.6;wr=2.2;}
-  else if(p.includes("EUR")){base=1.15722;dr=0.0018;wr=0.0075;}
-  let dec=p.includes("JPY")?3:p.includes("XAU")||p.includes("GOLD")?2:5;
-  if(!p.includes("GOLD")&&!p.includes("XAU")&&!p.includes("JPY")) dec=5;
-  document.getElementById("dH").value=(base+dr/2).toFixed(dec);
-  document.getElementById("dL").value=(base-dr/2).toFixed(dec);
-  document.getElementById("dC").value=base.toFixed(dec);
-  document.getElementById("wH").value=(base+wr/2).toFixed(dec);
-  document.getElementById("wL").value=(base-wr/2).toFixed(dec);
-  document.getElementById("wC").value=base.toFixed(dec);
-  document.getElementById("currPrice").value=base.toFixed(dec);
-  document.getElementById("priceShow").innerText=base.toFixed(dec);
-  autoLocked=true;
- }else{ resetBox3(); document.getElementById("currPrice").value=""; }
-}
-function calcHLC(){
- let dH=parseFloat(document.getElementById("dH").value),dL=parseFloat(document.getElementById("dL").value),dC=parseFloat(document.getElementById("dC").value);
- let wH=parseFloat(document.getElementById("wH").value),wL=parseFloat(document.getElementById("wL").value),wC=parseFloat(document.getElementById("wC").value);
- if(isNaN(dH)||isNaN(dL)||isNaN(dC)) return alert("Fill Daily HLC");
- if(isNaN(wH)) wH=dH; if(isNaN(wL)) wL=dL; if(isNaN(wC)) wC=dC;
- let dr=dH-dL, wr=wH-wL, p=document.getElementById("pairShow").innerText, dec=p.includes("JPY")?3:p.includes("XAU")||p.includes("GOLD")?2:5;
- if(!p.includes("GOLD")&&!p.includes("XAU")&&!p.includes("JPY")) dec=5;
- const calc=(C,R)=>{return {R5:(C+R*1.1).toFixed(dec),R4:(C+R*1.1/2).toFixed(dec),R3:(C+R*1.1/4).toFixed(dec),R2:(C+R*1.1/6).toFixed(dec),R1:(C+R*1.1/12).toFixed(dec),P:C.toFixed(dec),S1:(C-R*1.1/12).toFixed(dec),S2:(C-R*1.1/6).toFixed(dec),S3:(C-R*1.1/4).toFixed(dec),S4:(C-R*1.1/2).toFixed(dec),S5:(C-R*1.1).toFixed(dec)}}
- let d=calc(dC,dr), w=calc(wC,wr);
- Object.keys(d).forEach(k=>{document.getElementById("d"+k).innerText=d[k];document.getElementById("w"+k).innerText=w[k];});
-}
-function calcLot(){
- let curr=parseFloat(document.getElementById("currPrice").value),bal=parseFloat(document.getElementById("balance").value),sl=parseFloat(document.getElementById("sl").value),tp=parseFloat(document.getElementById("tp").value);
- if(isNaN(curr)||isNaN(bal)) return alert("Enter Current Price & Balance");
- let p=document.getElementById("pairShow").innerText, pip=p.includes("JPY")?0.01:p.includes("XAU")||p.includes("GOLD")?0.1:0.0001;
- let slPips=isNaN(sl)?10:Math.abs(curr-sl)/pip, tpPips=isNaN(tp)?20:Math.abs(tp-curr)/pip;
- let lot=(bal*0.95*0.02/slPips*10); if(lot<0.01) lot=0.01;
- let profit=lot*tpPips;
- document.getElementById("approval").innerText=(bal*0.95).toFixed(2);
- document.getElementById("lotFinal").innerText=lot.toFixed(2);
- document.getElementById("profitFinal").innerText="$"+profit.toFixed(2);
- document.getElementById("balanceFinal").innerText="$"+(bal+profit).toFixed(2);
-}
-function goToLot(){document.getElementById("currPrice").scrollIntoView({behavior:'smooth'});}
-</script>
-</body>
-</html>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TMFX</title><style>*{box-sizing:border-box;font-family:Arial}body{margin:0;padding:10px 10px 80px 10px;background:#020b1a;display:flex;flex-direction:column;align-items:center;min-height:100vh}.card{background:#0a1a2e;border:1px solid #1e3a5f;border-radius:12px;padding:12px;width:100%;max-width:650px;margin:auto}label{font-size:8.5px;color:#7aa3c7;display:block;margin-top:6px;font-weight:700}input,select{width:100%;background:#061a33;border:1px solid #1a3a5a;color:#fff;padding:12px;border-radius:8px;margin-top:3px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btnRed{width:100%;background:#dc2626;color:#fff;border:0;padding:14px;border-radius:8px;font-weight:900;margin-top:12px;cursor:pointer}.btnBlue{width:100%;background:#0f2d5a;color:#60a5fa;border:2px solid #3b82f6;padding:12px;border-radius:8px;margin-top:12px;font-weight:900;cursor:pointer}.btnGold{width:100%;background:#fbbf24;color:#000;border:0;padding:14px;border-radius:8px;font-weight:900;margin-top:8px;cursor:pointer}.hlBox{border:1px solid #1e3a5f;border-radius:10px;padding:12px;margin-top:12px;background:#081428}.lotBox{background:#0d2818;border:2px solid #22c55e;border-radius:10px;padding:12px;margin-top:12px}.hidden{display:none!important}table{width:100%;border-collapse:collapse;margin-top:16px}td{border:1px solid #000;padding:10px;text-align:center;font-size:11px;font-weight:700}.red{background:#dc2626;color:#fff;font-size:18px;font-weight:900}.dark{background:#0a0a0a;color:#fff}.gray{background:#2a2f3a;color:#fff}.r{background:#2e1f0a;color:#ffcc80}.p{background:#000;color:#fff}.s{background:#1a2a0a;color:#c5ff80}.resultHead{background:#fbbf24;color:#000;font-weight:900;font-size:12px;border:2px solid #fbbf24}.yellowCell{background:#fff;color:#000;font-size:13px;font-weight:900;border:2px solid #fbbf24}.greenCell{background:#dcfce7;color:#000;font-size:13px;font-weight:900;border:2px solid #22c55e}.lotHighlight{background:#dbeafe!important;color:#000!important;font-size:16px!important;border:2px solid #3b82f6!important}.profitHighlight{background:#dcfce7!important;color:#000!important;font-size:16px!important;border:2px solid #22c55e!important}#apiStatus{font-size:10px;text-align:center;margin-top:8px;font-weight:900;padding:6px;border-radius:6px}#pairList{max-height:150px;overflow-y:auto;background:#061a33;border:1px solid #fbbf24;border-radius:8px;margin-top:4px;display:none}#pairList div{padding:10px;color:#fff;cursor:pointer;font-size:12px;font-weight:700;border-bottom:1px solid #1a3a5a}#pairList div:hover{background:#fbbf24;color:#000}.risk-box{max-width:650px;width:100%;margin:20px auto 10px auto;padding:14px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;font-size:10.5px;color:#78350f;display:block!important;visibility:visible!important;line-height:1.5}.footer{text-align:center;margin:10px auto 30px auto;padding:16px;background:#081428;border:1px solid #1e3a5f;border-radius:10px;color:#7aa3c7;font-size:10px;width:100%;max-width:650px;display:block!important;visibility:visible!important}</style></head><body><div class="card"><div style="text-align:center;color:#fbbf24;font-weight:900;letter-spacing:2px">TMFX SAFE TRADE CALCULATOR</div>
+<div id="box0" class="hlBox" style="border:2px solid #fbbf24;background:#1a1500"><b style="color:#fbbf24;font-size:11px">BOX 0: VIP ACCESS (TRACKER)</b><div style="margin-top:8px"><label>TRADER ID</label><input id="traderId" placeholder="Enter VIP ID" style="border:2px solid #fbbf24"></div><button class="btnGold" onclick="checkVIP()">UNLOCK CALCULATOR</button><div id="vipStatus" style="text-align:center;font-size:11px;margin-top:8px;color:#fbbf24;font-weight:800">Enter ID to unlock</div></div>
+<div id="box1" class="hlBox hidden" style="border-color:#fbbf24"><b style="color:#fbbf24;font-size:11px">BOX 1: SELECT PAIR - SEARCH (36 PAIRS)</b><div style="margin-top:8px"><label>🔍 SEARCH CURRENCY</label><input id="pairSearch" placeholder="Search AUDCAD, EURJPY etc..." oninput="filterPairs()" style="border:2px solid #fbbf24;background:#1a1500"><div id="pairList"></div></div><div class="g2" style="margin-top:8px"><div><label>SELECTED PAIR</label><select id="pairD" onchange="if(modeD.value=='auto')autoFillAPI()"><option>GOLD</option><option>XAUUSD</option><option>XPDUSD</option><option>XPTUSD</option><option>AUXUSD</option><option>SILVER</option><option>BTCUSD</option><option>ETHUSD</option><option>SOLUSD</option><option>LTCUSD</option><option>XRPUSD</option><option>EURUSD</option><option>GBPUSD</option><option>AUDUSD</option><option>NZDUSD</option><option>USDJPY</option><option>USDCAD</option><option>USDCHF</option><option>EURJPY</option><option>GBPJPY</option><option>EURGBP</option><option>EURAUD</option><option>GBPAUD</option><option>EURCAD</option><option>GBPCAD</option><option>AUDCAD</option><option>AUDJPY</option><option>NZDJPY</option><option>CADJPY</option><option>CHFJPY</option><option>EURCHF</option><option>GBPCHF</option><option>EURNZD</option><option>GBPNZD</option><option>AUDNZD</option><option>NZDCAD</option></select></div><div><label>MODE</label><select id="modeD" onchange="changeMode()" style="background:#1a1500;color:#fbbf24;font-weight:900;border:2px solid #fbbf24"><option value="auto" selected>AUTO</option><option value="manual">MANUAL</option></select></div></div><div id="apiStatus" style="background:#052e16;border:1px solid #22c55e;color:#22c55e">● AUTO: Connecting...</div><div id="coreStatus" style="font-size:8px;text-align:center;margin-top:4px;color:#7aa3c7">6 Core Precise: USDCHF USDCAD AUDUSD NZDUSD GBPUSD USDJPY</div></div>
+<div id="box2" class="hlBox hidden"><b style="color:#fbbf24;font-size:11px">BOX 2: MARKET DATA (HLC)</b><div class="g3" style="margin-top:6px"><div><label>DAILY HIGH</label><input id="dh" type="number"></div><div><label>DAILY LOW</label><input id="dl" type="number"></div><div><label>DAILY CLOSE</label><input id="dc" type="number"></div></div><div class="g3" style="margin-top:6px"><div><label>WEEKLY HIGH</label><input id="wh" type="number"></div><div><label>WEEKLY LOW</label><input id="wl" type="number"></div><div><label>WEEKLY CLOSE</label><input id="wc" type="number"></div></div><button id="calcHLCBtn" class="btnBlue" onclick="calcHLCOnly()">CALCULATE HLC → SHOW R/S TABLE</button></div>
+<div id="box3" class="hlBox hidden"><b style="color:#fbbf24;font-size:11px">BOX 3: R/S LEVELS</b><div id="pivotPart"><table><tr><td colspan="3" class="red" id="pName">GOLD</td></tr><tr><td class="dark"></td><td class="gray">DAILY</td><td class="gray">WEEKLY</td></tr><tr><td class="r">R5</td><td class="r" id="dR5">-</td><td class="r" id="wR5">-</td></tr><tr><td class="r">R4</td><td class="r" id="dR4">-</td><td class="r" id="wR4">-</td></tr><tr><td class="r">R3</td><td class="r" id="dR3">-</td><td class="r" id="wR3">-</td></tr><tr><td class="r">R2</td><td class="r" id="dR2">-</td><td class="r" id="wR2">-</td></tr><tr><td class="r">R1</td><td class="r" id="dR1">-</td><td class="r" id="wR1">-</td></tr><tr><td class="p">P</td><td class="p" id="dP">-</td><td class="p" id="wP">-</td></tr><tr><td class="s">S1</td><td class="s" id="dS1">-</td><td class="s" id="wS1">-</td></tr><tr><td class="s">S2</td><td class="s" id="dS2">-</td><td class="s" id="wS2">-</td></tr><tr><td class="s">S3</td><td class="s" id="dS3">-</td><td class="s" id="wS3">-</td></tr><tr><td class="s">S4</td><td class="s" id="dS4">-</td><td class="s" id="wS4">-</td></tr><tr><td class="s">S5</td><td class="s" id="dS5">-</td><td class="s" id="wS5">-</td></tr></table></div></div>
+<div id="box4" class="hlBox hidden" style="border-color:#60a5fa"><b style="color:#60a5fa;font-size:11px">BOX 4: TRADE SETUP - CURRENT PRICE + SL/TP</b><div style="margin-top:8px"><label style="color:#22c55e">CURRENT PRICE *REQUIRED</label><input id="cpD" type="number" style="border:2px solid #22c55e;background:#052e16" placeholder="Enter Current Price"></div><div class="g2" style="margin-top:10px"><div><label>SL</label><input id="slD" type="number"></div><div><label>TP</label><input id="tpD" type="number"></div></div></div>
+<div id="box5" class="lotBox hidden"><b style="color:#22c55e;font-size:11px">BOX 5: SAFE LOT (95%) + CALCULATE</b><div style="margin-top:8px"><label style="color:#fbbf24">BALANCE + $/¢ *REQUIRED</label><div style="display:flex;gap:6px"><input id="balInput" type="number" placeholder="Enter Balance" style="flex:2;border:2px solid #fbbf24" oninput="calcBalance()"><select id="balType" onchange="calcBalance()" style="flex:1;background:#1a1500;color:#fbbf24;font-weight:900;border:2px solid #fbbf24"><option value="" disabled selected>SELECT $/¢</option><option value="dollar">Dollar $</option><option value="cent">Cent ¢</option></select></div><div id="balShow" style="text-align:center;font-size:11px;color:#fff;margin-top:8px;font-weight:800;background:#1a1500;padding:6px;border-radius:6px;border:1px dashed #fbbf24">⚠️ Enter balance and select $ or ¢</div></div><button class="btnRed" onclick="doCalculate()">CALCULATE LOT & PROFIT</button></div>
+<div id="box6" class="hlBox hidden" style="border-color:#fbbf24;background:#1a1500"><b style="color:#fbbf24;font-size:11px">BOX 6: APPROVAL / LOT / PROFIT / BALANCE</b><div id="lotPart"><table><tr><td class="resultHead" style="background:#000;color:#fbbf24">RESULT</td><td class="resultHead">Dollar</td><td class="resultHead">Cent</td></tr><tr><td class="resultHead" style="background:#052e16;color:#22c55e">BALANCE</td><td class="greenCell" id="balD">-</td><td class="greenCell" id="balC">-</td></tr><tr><td class="resultHead" style="background:#1a1500;color:#fbbf24">APPROVAL</td><td class="yellowCell" style="background:#fef9c3" id="appD">-</td><td class="yellowCell" style="background:#fef9c3" id="appC">-</td></tr><tr><td class="resultHead" style="background:#0f2d5a;color:#60a5fa;border:2px solid #3b82f6">LOT SIZE ⭐</td><td class="lotHighlight yellowCell" id="lotD">-</td><td class="lotHighlight yellowCell" id="lotC">-</td></tr><tr><td class="resultHead" style="background:#052e16;color:#4ade80;border:2px solid #22c55e">PROFIT 💰</td><td class="profitHighlight yellowCell" id="profD">-</td><td class="profitHighlight yellowCell" id="profC">-</td></tr><tr><td class="resultHead" style="background:#fbbf24;color:#000">TOTAL</td><td class="resultHead" style="background:#000;color:#facc15" id="totD">-</td><td class="resultHead" style="background:#000;color:#facc15" id="totC">-</td></tr></table></div><button class="btnBlue" onclick="location.reload()">RESET - EMPTY BOXES</button></div>
+</div><div class="risk-box"><b>⚠️ RISK DISCLAIMER - PLEASE READ</b><br>1. Educational Only: This calculator is for educational purposes only, not financial advice.<br>2. High Risk: Forex, Gold, Crypto trading involves high risk. You can lose all capital.<br>3. No Guarantee: R/S levels and lot calculations do not guarantee profit. Past performance ≠ future.<br>4. Data Source: Prices from TwelveData API - always confirm with your broker chart.<br>5. Your Responsibility: You are fully responsible for your trading decisions. Trade with money you can afford to lose.<br><span style="font-size:9px;opacity:.7">© 2026 THEMULTIPLIERFX - All Rights Reserved | Version 3.9 Final</span></div><div class="footer"><b style="color:#fbbf24">TMFX SAFE TRADE CALCULATOR</b><br>TheMultiplierFx@gmail.com | 09118119077<br><span style="font-size:8px;margin-top:4px;display:block">Version 3.9 - Tracker + True Weekly + 6 Core Precise + Search (36 Pairs)</span></div><script>
+const allPairs=["GOLD","XAUUSD","XPDUSD","XPTUSD","AUXUSD","SILVER","BTCUSD","ETHUSD","SOLUSD","LTCUSD","XRPUSD","EURUSD","GBPUSD","AUDUSD","NZDUSD","USDJPY","USDCAD","USDCHF","EURJPY","GBPJPY","EURGBP","EURAUD","GBPAUD","EURCAD","GBPCAD","AUDCAD","AUDJPY","NZDJPY","CADJPY","CHFJPY","EURCHF","GBPCHF","EURNZD","GBPNZD","AUDNZD","NZDCAD"];
+function filterPairs(){let q=document.getElementById('pairSearch').value.toUpperCase(),list=document.getElementById('pairList');if(!q){list.style.display='none';return;}let f=allPairs.filter(p=>p.includes(q));if(!f.length){list.style.display='none';return;}list.innerHTML=f.map(p=>`<div onclick="selectPair('${p}')">${p}</div>`).join('');list.style.display='block';}
+function selectPair(p){document.getElementById('pairD').value=p;document.getElementById('pairSearch').value=p;document.getElementById('pairList').style.display='none';if(document.getElementById('modeD').value=='auto')autoFillAPI();}
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycby-rGm9QhUF16G3mwcv2jpMa_BwkcslHyYIjo3VOah0N6Ce-3H_Z_8djlJKCSRGlpl_kA/exec";
+let coreRates={USDCHF:0.88,USDCAD:1.36,AUDUSD:0.66,NZDUSD:0.61,GBPUSD:1.27,USDJPY:149.5};
+function getDevice(){let d=localStorage.getItem('tmfx_dev');if(!d){d='DEV-'+Math.random().toString(36).substr(2,9).toUpperCase();localStorage.setItem('tmfx_dev',d);}return d;}
+async function checkVIP(){let id=document.getElementById('traderId').value.trim();let st=document.getElementById('vipStatus');if(!id){st.innerText='❌ Enter ID';return;}st.innerText='Checking...';try{let dev=getDevice();let url=`${SCRIPT_URL}?id=${encodeURIComponent(id)}&device=${encodeURIComponent(dev)}`;let res=await fetch(url);let txt=await res.text();st.innerText=txt;let low=txt.toLowerCase();if(low.includes('ok')||low.includes('welcome')||low.includes('device')||low.includes('success')){st.style.color='#22c55e';st.innerText='✅ '+txt+' - UNLOCKED';['box1','box2','box3','box4','box5','box6'].forEach(b=>document.getElementById(b).classList.remove('hidden'));setTimeout(()=>{autoFillAPI();fetchCoreMajors();},500);}else{st.style.color='#dc2626';st.innerText='❌ '+txt;}}catch(e){st.innerText='Offline error - try again';}}
+function getX(p){let pair=p.toUpperCase();if(['GOLD','XAUUSD','XPDUSD','XPTUSD','AUXUSD'].includes(pair))return 100;if(['BTCUSD','ETHUSD','SOLUSD','LTCUSD','XRPUSD'].includes(pair))return 1;if(pair=='SILVER')return 5000;let quote=pair.slice(3,6);if(quote=='USD')return 100000;if(quote=='CAD'&&coreRates.USDCAD)return(100000/coreRates.USDCAD);if(quote=='CHF'&&coreRates.USDCHF)return(100000/coreRates.USDCHF);if(quote=='AUD'&&coreRates.AUDUSD)return(100000*coreRates.AUDUSD);if(quote=='NZD'&&coreRates.NZDUSD)return(100000*coreRates.NZDUSD);if(quote=='GBP'&&coreRates.GBPUSD)return(100000*coreRates.GBPUSD);if(quote=='JPY'&&coreRates.USDJPY)return(100000/coreRates.USDJPY);if(pair.includes('JPY'))return 1000;return 100000;}
+function priceDecimals(p){p=p.toUpperCase();if(p.includes('JPY'))return 3;return 5;}
+function levels(H,L,C){if(!H||!L||!C)return null;let P=(H+L+C)/3;return{R5:H+4*(P-L),R4:H+3*(P-L),R3:H+2*(P-L),R2:P+(H-L),R1:2*P-L,P:P,S1:2*P-H,S2:P-(H-L),S3:L-2*(H-P),S4:L-3*(H-P),S5:L-4*(H-P)};}
+let balDollar=0,balCent=0;
+function calcBalance(){let v=+balInput.value||0,t=balType.value,sh=document.getElementById('balShow');if(!t||!v){sh.innerText='⚠️ Enter balance and select $ or ¢';return false;}if(t=='dollar'){balDollar=v;balCent=v*100;}else{balCent=v;balDollar=v/100;}sh.innerText='Dollar: $'+balDollar.toFixed(2)+' | Cent: '+balCent.toFixed(2)+'¢';sh.style.color='#fbbf24';pName.innerText=pairD.value;balD.innerText='$'+balDollar.toFixed(2);balC.innerText=balCent.toFixed(2)+'¢';return true;}
+function calcDaily(){let o=levels(+dh.value,+dl.value,+dc.value);if(!o)return;let d=priceDecimals(pairD.value);['R5','R4','R3','R2','R1','P','S1','S2','S3','S4','S5'].forEach(k=>document.getElementById('d'+k).innerText=o[k].toFixed(d));}
+function calcWeekly(){let o=levels(+wh.value,+wl.value,+wc.value);if(!o)return;let d=priceDecimals(pairD.value);['R5','R4','R3','R2','R1','P','S1','S2','S3','S4','S5'].forEach(k=>document.getElementById('w'+k).innerText=o[k].toFixed(d));}
+function calcLot(){calcBalance();let X=getX(pairD.value),cp=+cpD.value,sl=+slD.value,tp=+tpD.value;if(!cp||!sl||!tp){alert('Fill Current, SL, TP');return false;}let YD=Math.abs(cp-sl)*X,ZD=Math.abs(cp-tp)*X;let lD=YD>0?Math.floor(balDollar/YD*100)/100:0,lC=YD>0?Math.floor(balCent/YD*100)/100:0;if(lD<0.01)lD=0;if(lC<0.01)lC=0;appD.innerText=lD>=0.01?'OK':'LOW FUNDS';appC.innerText=lC>=0.01?'OK':'LOW FUNDS';lotD.innerText=lD.toFixed(2);lotC.innerText=lC.toFixed(2);profD.innerText=(lD*ZD).toFixed(2);profC.innerText=(lC*ZD).toFixed(2);totD.innerText=(balDollar+lD*ZD).toFixed(2);totC.innerText=(balCent+lC*ZD).toFixed(2);return true;}
+function calcHLCOnly(){if(!dh.value||!dl.value||!dc.value||!wh.value||!wl.value||!wc.value){alert('Fill Daily and Weekly HLC first');return;}calcDaily();calcWeekly();document.getElementById('box3').scrollIntoView({behavior:'smooth'});}
+function changeMode(){let m=modeD.value,st=apiStatus;if(m=='manual'){st.innerText='● MANUAL: Boxes Empty';st.style.color='#fbbf24';st.style.background='#1a1500';st.style.border='1px dashed #fbbf24';dh.value='';dl.value='';dc.value='';wh.value='';wl.value='';wc.value='';cpD.value='';slD.value='';tpD.value='';['dR5','dR4','dR3','dR2','dR1','dP','dS1','dS2','dS3','dS4','dS5','wR5','wR4','wR3','wR2','wR1','wP','wS1','wS2','wS3','wS4','wS5'].forEach(id=>{let el=document.getElementById(id); if(el) el.innerText='-';});}else{st.style.color='#22c55e';st.style.background='#052e16';st.style.border='1px solid #22c55e';autoFillAPI();fetchCoreMajors();}}
+function doCalculate(){let bt=balType,bi=balInput,sh=balShow,cp=document.getElementById('cpD');if(!cp.value){alert('Enter Current Price');cp.focus();cp.style.border='3px solid #dc2626';document.getElementById('box4').scrollIntoView({behavior:'smooth'});return;}if(!bt.value){alert('Select Dollar $ or Cent ¢');bt.focus();bt.style.border='3px solid #dc2626';sh.innerText='❌ SELECT $ or ¢ BEFORE CALCULATE';sh.style.color='#ff4444';document.getElementById('box5').scrollIntoView({behavior:'smooth'});return;}if(!bi.value){alert('Enter Balance');bi.focus();return;}calcDaily();calcWeekly();if(!calcLot())return;document.getElementById('box6').scrollIntoView({behavior:'smooth'});}
+const API_KEY='cc79b07b3b51480db6fef93dc2220320';
+async function fetchCoreMajors(){let core=['USD/CHF','USD/CAD','AUD/USD','NZD/USD','GBP/USD','USD/JPY'], cs=document.getElementById('coreStatus');try{cs.innerText='6 Core: Fetching...';for(let sym of core){let url=`https://api.twelvedata.com/price?symbol=${sym}&apikey=${API_KEY}`;let r=await fetch(url);let j=await r.json();if(j.price)coreRates[sym.replace('/','')] = parseFloat(j.price);}cs.innerText='6 Core READY: CHF='+coreRates.USDCHF.toFixed(5)+' CAD='+coreRates.USDCAD.toFixed(5)+' AUD='+coreRates.AUDUSD.toFixed(5)+' NZD='+coreRates.NZDUSD.toFixed(5)+' GBP='+coreRates.GBPUSD.toFixed(5)+' JPY='+coreRates.USDJPY.toFixed(3);}catch(e){cs.innerText='6 Core: Using defaults';}}
+async function autoFillAPI(){if(modeD.value=='manual')return;let pair=pairD.value.toUpperCase(),st=apiStatus;st.innerText='● AUTO: Loading '+pair+'...';let sym=pair;if(pair==='GOLD'||pair==='XAUUSD'||pair==='AUXUSD')sym='XAU/USD';else if(pair==='SILVER')sym='XAG/USD';else if(pair==='XPDUSD')sym='XPD/USD';else if(pair==='XPTUSD')sym='XPT/USD';else if(pair.length===6)sym=pair.slice(0,3)+'/'+pair.slice(3,6);try{let dUrl=`https://api.twelvedata.com/time_series?symbol=${sym}&interval=1day&apikey=${API_KEY}&outputsize=7`,wUrl=`https://api.twelvedata.com/time_series?symbol=${sym}&interval=1week&apikey=${API_KEY}`;let[dR,wR]=await Promise.all([fetch(dUrl),fetch(wUrl)]);let dD=await dR.json(),wD=await wR.json();if(!dD.values){st.innerText='● API Error: '+(dD.message||'No data');return;}let d=dD.values[0],dec=priceDecimals(pair);let dHigh=parseFloat(d.high), dLow=parseFloat(d.low);let weeklyHigh=0, weeklyLow=9999999, weeklyClose=parseFloat(d.close);let highs=dD.values.slice(0,5).map(v=>parseFloat(v.high)), lows=dD.values.slice(0,5).map(v=>parseFloat(v.low));weeklyHigh=Math.max(...highs);weeklyLow=Math.min(...lows);if(wD.values && wD.values[0]){let wHigh=parseFloat(wD.values[0].high), wLow=parseFloat(wD.values[0].low);weeklyHigh=Math.max(weeklyHigh,wHigh);weeklyLow=Math.min(weeklyLow,wLow);weeklyClose=parseFloat(wD.values[0].close)||weeklyClose;}if(weeklyHigh<=dHigh)weeklyHigh=dHigh*1.008;if(weeklyLow>=dLow)weeklyLow=dLow*0.992;dh.value=dHigh.toFixed(dec);dl.value=dLow.toFixed(dec);dc.value=parseFloat(d.close).toFixed(dec);wh.value=weeklyHigh.toFixed(dec);wl.value=weeklyLow.toFixed(dec);wc.value=weeklyClose.toFixed(dec);cpD.value=parseFloat(d.close).toFixed(dec);calcDaily();calcWeekly();st.innerText='● LIVE: '+pair+' @ '+parseFloat(d.close).toFixed(dec)+' - Weekly TRUE High/Low';pName.innerText=pair;}catch(e){st.innerText='● OFFLINE: '+e;}}
+</script></body></html>
